@@ -7,3 +7,4 @@
 ## Technologie
 - Python
 - MongoDB
+- Flask
