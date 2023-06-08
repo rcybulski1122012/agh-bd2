@@ -23,7 +23,7 @@ class Borrowing:
     user_id: str
     is_returned: bool
     borrowed_at: datetime
-    return_date: date
+    return_date: Optional[date]
 
 
 @dataclass
