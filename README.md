@@ -7,7 +7,8 @@
 ## Technologie
 - Python
 - MongoDB
-- Flask
+- Flask (Jinja)
+- Bunnet (ODM) & Pydantic
 
 
 ## Uruchamianie
@@ -26,10 +27,3 @@
     ```bash
     python -m app 
     ```
-  
-
-## Przydatne linki
-- [Dokumentacja Flask](https://flask.palletsprojects.com/en/2.3.x/)
-- [Dokumentacja Flask-PyMongo](https://flask-pymongo.readthedocs.io/en/latest/)
-- [Dokumentacja Flask-Login](https://flask-login.readthedocs.io/en/latest/)
-- [Dokumentacja Jinja](https://jinja.palletsprojects.com/en/3.1.x/)
