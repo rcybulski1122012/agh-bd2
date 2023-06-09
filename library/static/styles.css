@@ -4,7 +4,8 @@ body {
 }
 
 main.container {
-    margin-top: 1rem;
+    margin: 0 auto 1rem auto;
+    max-width: 800px;
 }
 
 main h1, main h2, main h3, main h4, main h5, main h6 {

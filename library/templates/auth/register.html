@@ -1,0 +1,31 @@
+{% from "_form_macros.html" import render_field %}
+
+{% extends "base.html" %}
+{% block title %}
+Register
+{% endblock %}
+
+{% block content %}
+<h1>Register</h1>
+
+<div class="content-section">
+  <form method="POST" action="">
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+      {{ render_field(form, 'first_name') }}
+      {{ render_field(form, 'last_name') }}
+      {{ render_field(form, 'email') }}
+      {{ render_field(form, 'phone_number') }}
+      {{ render_field(form, 'street') }}
+      {{ render_field(form, 'city') }}
+      {{ render_field(form, 'postal_code') }}
+      {{ render_field(form, 'country') }}
+      {{ render_field(form, 'password') }}
+      {{ render_field(form, 'confirm_password') }}
+    </fieldset>
+    <div class="form-group mt-3">
+      {{ form.submit(class="btn btn-outline-info") }}
+    </div>
+  </form>
+</div>
+{% endblock %}
