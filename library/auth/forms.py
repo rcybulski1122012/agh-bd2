@@ -1,4 +1,3 @@
-from auth.models import User
 from flask_wtf import FlaskForm
 from wtforms import EmailField
 from wtforms import PasswordField
@@ -9,6 +8,8 @@ from wtforms.validators import Email
 from wtforms.validators import EqualTo
 from wtforms.validators import Length
 from wtforms.validators import ValidationError
+
+from library.auth.models import User
 
 
 class RegisterForm(FlaskForm):

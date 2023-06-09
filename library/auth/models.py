@@ -7,9 +7,9 @@ from bunnet import PydanticObjectId
 from flask_login import UserMixin
 from pydantic import BaseModel
 from pydantic import Field
-from utils import datetime_encoders
 
 from library import login_manager
+from library.utils import datetime_encoders
 
 
 @login_manager.user_loader

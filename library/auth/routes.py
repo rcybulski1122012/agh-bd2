@@ -1,7 +1,3 @@
-from auth.forms import LoginForm
-from auth.forms import RegisterForm
-from auth.models import Address
-from auth.models import User
 from flask import Blueprint
 from flask import flash
 from flask import redirect
@@ -13,6 +9,10 @@ from flask_login import login_user
 from flask_login import logout_user
 
 from library import bcrypt
+from library.auth.forms import LoginForm
+from library.auth.forms import RegisterForm
+from library.auth.models import Address
+from library.auth.models import User
 
 auth = Blueprint("auth", __name__)
 

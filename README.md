@@ -27,3 +27,7 @@
     ```bash
     python -m app 
     ```
+- Dodatkowo można skorzysać ze skryptu generującego losowe dane
+  ```bash
+    python -m populate_db
+  ```

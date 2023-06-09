@@ -21,15 +21,15 @@ def create_app():
     login_manager.init_app(app)
     bcrypt.init_app(app)
 
-    from books.models import Book
-    from auth.models import User
-    from books.models import Rent
+    from library.books.models import Book
+    from library.auth.models import User
+    from library.books.models import Rent
 
     init_bunnet(database=mongo_client["library"], document_models=[Book, User, Rent])
 
     from library.books.routes import books
-    from main.routes import main
-    from auth.routes import auth
+    from library.main.routes import main
+    from library.auth.routes import auth
 
     app.register_blueprint(books)
     app.register_blueprint(main)

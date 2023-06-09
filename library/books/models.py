@@ -5,8 +5,9 @@ from bunnet import Document
 from bunnet import Indexed
 from bunnet import PydanticObjectId
 from pydantic import Field
-from utils import datetime_encoders
-from utils import next_month_factory
+
+from library.utils import datetime_encoders
+from library.utils import next_month_factory
 
 
 class Book(Document):
