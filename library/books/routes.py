@@ -1,7 +1,6 @@
 from flask import Blueprint
 from flask import render_template
 
-
 books = Blueprint("books", __name__)
 
 
