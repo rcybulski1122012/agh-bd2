@@ -5,6 +5,7 @@ from faker import Faker
 from library import create_app
 from library.auth.models import User
 from library.books.models import Book
+from library.books.models import BookGenre
 from library.books.models import Rent
 
 faker = Faker()
@@ -41,15 +42,19 @@ def populate_db():
 
     books = []
     for _ in range(1000):
+        stock = faker.random_int(1, 50)
         book = Book(
             title=faker.sentence(),
             authors=[faker.name() for _ in range(random.randint(1, 2))],
             topic=faker.word(),
+            genre=random.choice(list(BookGenre)).value,
             publication_date=faker.date_between(start_date="-30y", end_date="today"),
             publisher=faker.company(),
+            description=faker.text(),
             isbn=generate_isbn(),
             pages=faker.random_int(100, 1000),
-            stock=faker.random_int(1, 50),
+            stock=stock,
+            initial_stock=stock + 5,
             images_urls=[faker.image_url() for _ in range(random.randint(1, 3))],
             created_at=faker.date_time_this_year(),
             updated_at=faker.date_time_this_year(),

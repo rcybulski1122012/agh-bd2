@@ -1,0 +1,91 @@
+{% from "_form_macros.html" import render_field, render_checkbox_field %}
+
+{% extends "base.html" %}
+{% block content %}
+<h1 class="my-3">Book List</h1>
+<div class="row">
+    <div class="col-3">
+        <form method="GET" action="">
+            <fieldset class="form-group">
+              {{ render_field(form, 'title') }}
+              {{ render_field(form, 'genre') }}
+              {{ render_field(form, 'author') }}
+              {{ render_field(form, 'order_by') }}
+
+              <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" value="1" id="available" name="available" {% if form.available.data %}checked{% endif %}>
+                  <label class="form-check-label" for="available">
+                    {{ form.available.label.text }}
+                  </label>
+                </div>
+            </fieldset>
+
+            <div class="form-group mt-3">
+              {{ form.submit(class="btn btn-outline-info") }}
+            </div>
+        </form>
+    </div>
+    <div class="col-9">
+    {% if books %}
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for book in books %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="img-wrapper">
+                    <img src="{{ book.images_urls[0] }}" class="card-img-top" alt="{{ book.title }}">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text">Authors: {{ ', '.join(book.authors) }}</p>
+                    <p class="card-text">Genre: {{ book.genre.value }}</p>
+                    <p class="card-text">Publication Date: {{ book.publication_date.strftime('%Y-%m-%d')}}</p>
+                    <p class="card-text">Pages: {{ book.pages }}</p>
+                    <p class="card-text">Availability: {{ book.stock }}/{{ book.initial_stock }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <h2 class="text-center">There are no books that meet the given criteria.</h2>
+    {% endif %}
+</div>
+</div>
+
+{% if pagination.total != 0 %}
+<nav aria-label="Page navigation" class="mt-3">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('books.list_books') }}?page=1&page_size={{ pagination.page_size }}&{{ filters_query_string }}" aria-label="First">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="visually-hidden">First</span>
+            </a>
+        </li>
+        <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('books.list_books') }}?page={{pagination.page - 1}}&page_size={{ pagination.page_size }}&{{ filters_query_string }}" aria-label="Previous">
+                <span aria-hidden="true">&lsaquo;</span>
+                <span class="visually-hidden">Previous</span>
+            </a>
+        </li>
+        {% for i in range(pagination.page - 2, pagination.page + 3) %}
+            {% if i > 0 and i <= pagination.total_pages %}
+                <li class="page-item {% if pagination.page == i %}active{% endif %}"><a class="page-link" href="{{ url_for('books.list_books') }}?page={{ i }}&page_size={{ pagination.page_size }}&{{ filters_query_string }}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+        <li class="page-item {% if pagination.page == pagination.total_pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('books.list_books') }}?page={{ pagination.page + 1}}&page_size={{ pagination.page_size }}&{{ filters_query_string }}" aria-label="Next">
+                <span aria-hidden="true">&rsaquo;</span>
+                <span class="visually-hidden">Next</span>
+            </a>
+        </li>
+        <li class="page-item {% if pagination.page == pagination.total_pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('books.list_books') }}?page={{ pagination.total_pages }}&page_size={{ pagination.page_size }}&{{ filters_query_string }}" aria-label="Last">
+                <span aria-hidden="true">&raquo;</span>
+                <span class="visually-hidden">Last</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
