@@ -7,6 +7,7 @@ from bunnet import Indexed
 from bunnet import PydanticObjectId
 from bunnet.odm.operators.find.array import ElemMatch
 from bunnet.odm.operators.find.evaluation import RegEx
+from flask import url_for
 from pydantic import Field
 
 from library.utils import datetime_encoders
@@ -81,6 +82,10 @@ class Book(Document):
 
     class Settings:
         bson_encoders = {**datetime_encoders}
+
+    @property
+    def detail_url(self):
+        return url_for("books.book_detail", book_id=self.id)
 
     @classmethod
     def filter(

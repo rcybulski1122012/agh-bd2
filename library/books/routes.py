@@ -22,10 +22,7 @@ def list_books():
         "available": request.args.get("available", None, type=bool),
         "order_by": request.args.get("order_by", None),
     }
-
     form = FilterBooksForm(**filters)
-
-    print(filters)
     filters_query_string = "&".join([f"{k}={v}" for k, v in filters.items() if v])
 
     query = Book.filter(**filters)
@@ -39,8 +36,6 @@ def list_books():
         "total_pages": math.ceil(total / page_size),
     }
 
-    print(pagination)
-
     return render_template(
         "books/list_books.html",
         form=form,
@@ -48,3 +43,9 @@ def list_books():
         pagination=pagination,
         filters_query_string=filters_query_string,
     )
+
+
+@books.route("/books/<book_id>", methods=["GET"])
+def book_detail(book_id):
+    book = Book.get(book_id).run()
+    return render_template("books/book_detail.html", book=book)
