@@ -23,8 +23,12 @@
                 <span class="badge bg-danger">Overdue</span>
             {% endif %}
         </div>
+       {% if current_user.is_admin %}
         <a href="{{ rent.book.return_url(user.id) }}" class="btn btn-primary">Return</a>
+       {% endif %}
     </li>
+    {% else %}
+      <p>You have returned all rented books!</p>
     {% endfor %}
   </ul>
 
@@ -37,6 +41,8 @@
         Due date: {{ rent.due_date }}<br>
         Return date: {{ rent.return_date }}
       </li>
+    {% else %}
+      <p>You have not returned any books yet.</p>
     {% endfor %}
   </ul>
 {% endblock %}

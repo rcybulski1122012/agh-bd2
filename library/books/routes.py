@@ -1,6 +1,7 @@
 import datetime
 import math
 
+from auth.decorators import admin_role_required
 from bunnet import PydanticObjectId
 from flask import abort
 from flask import Blueprint
@@ -9,6 +10,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
+from flask_login import current_user
 from flask_login import login_required
 
 from library import mongo_client
@@ -64,6 +66,9 @@ def book_detail(book_id):
 
     form = RentBookForm()
     if request.method == "POST":
+        if not current_user.is_admin:
+            abort(403)
+
         user = (
             User.find_one({"email": form.email_or_phone_number.data}).run()
             or User.find_one({"email": form.email_or_phone_number.data}).run()
@@ -80,6 +85,7 @@ def book_detail(book_id):
 
 @books.route("/books/<book_id>/rent/<user_id>", methods=["GET"])
 @login_required
+@admin_role_required
 def rent_book(book_id, user_id):
     book = Book.get(book_id).run()
     rent = Rent.find_one(
@@ -116,6 +122,7 @@ def rent_book(book_id, user_id):
 
 @books.route("/books/<book_id>/return/<user_id>", methods=["GET"])
 @login_required
+@admin_role_required
 def return_book(book_id, user_id):
     rent = Rent.find_one(
         {

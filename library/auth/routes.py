@@ -1,5 +1,6 @@
 import math
 
+from auth.decorators import admin_role_required
 from bunnet import PydanticObjectId
 from flask import abort
 from flask import Blueprint
@@ -78,6 +79,7 @@ def register():
 
 @auth.route("/members", methods=["GET"])
 @login_required
+@admin_role_required
 def member_list():
     page = request.args.get("page", 1, type=int)
     page_size = request.args.get("page_size", 24, type=int)
@@ -116,6 +118,9 @@ def member_list():
 @login_required
 def user_details(user_id):
     user = User.get(user_id).run()
+
+    if not current_user.is_admin and current_user.id != user.id:
+        abort(403)
 
     if not user:
         abort(404)

@@ -42,7 +42,7 @@
       <p><strong>Stock:</strong> {{ book.stock }} (Initial stock: {{ book.initial_stock }})</p>
     </div>
 
-    {% if book.is_available %}
+    {% if book.is_available and current_user.is_admin %}
     <hr>
     <div class="mt-4">
       <form method="POST" action="">
