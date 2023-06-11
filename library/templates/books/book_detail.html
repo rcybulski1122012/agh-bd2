@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}
+ {{ book.title }}
+{% endblock %}
+
+{% block content %}
+<div class="row mt-3">
+  <div class="col">
+    <!-- Carousel -->
+    <div id="bookImagesCarousel" class="carousel slide mt-4" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        {% for url in book.images_urls %}
+          <div class="carousel-item{% if loop.first %} active{% endif %}">
+            <img src="{{ url }}" class="d-block w-100 carousel-image" alt="{{ book.title }} image">
+          </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#bookImagesCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#bookImagesCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+
+    <!-- Book Details -->
+    <div class="mt-4">
+      <h2>{{ book.title }}</h2>
+      <p><strong>Authors:</strong> {{ book.authors|join(', ') }}</p>
+      <p><strong>Topic:</strong> {{ book.topic }}</p>
+      <p><strong>Genre:</strong> {{ book.genre }}</p>
+      <p><strong>Publication date:</strong> {{ book.publication_date.strftime('%Y-%m-%d') }}</p>
+      <p><strong>Description:</strong> {{ book.description }}</p>
+      <p><strong>Publisher:</strong> {{ book.publisher }}</p>
+      <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+      <p><strong>Pages:</strong> {{ book.pages }}</p>
+      <p><strong>Stock:</strong> {{ book.stock }} (Initial stock: {{ book.initial_stock }})</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

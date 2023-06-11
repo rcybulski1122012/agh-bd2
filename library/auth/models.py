@@ -14,7 +14,6 @@ from library.utils import datetime_encoders
 
 @login_manager.user_loader
 def load_user(user_id: str):
-
     return User.get(PydanticObjectId(user_id)).run()
 
 
