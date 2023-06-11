@@ -9,6 +9,7 @@
 - MongoDB
 - Flask (Jinja)
 - Bunnet (ODM) & Pydantic
+- Bootstrap 5
 
 
 ## Uruchamianie

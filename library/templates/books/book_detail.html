@@ -1,3 +1,5 @@
+{% from "_form_macros.html" import render_field %}
+
 {% extends "base.html" %}
 
 {% block title %}
@@ -38,8 +40,22 @@
       <p><strong>ISBN:</strong> {{ book.isbn }}</p>
       <p><strong>Pages:</strong> {{ book.pages }}</p>
       <p><strong>Stock:</strong> {{ book.stock }} (Initial stock: {{ book.initial_stock }})</p>
-
     </div>
+
+    {% if book.is_available %}
+    <hr>
+    <div class="mt-4">
+      <form method="POST" action="">
+         <fieldset class="form-group">
+            {{ render_field(form, 'email_or_phone_number') }}
+
+            <div class="form-group mt-3">
+              {{ form.submit(class="btn btn-outline-info") }}
+            </div>
+         </fieldset>
+      </form>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
