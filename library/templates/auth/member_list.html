@@ -1,0 +1,73 @@
+{% from "_form_macros.html" import render_field %}
+{% from "_pagination.html" import render_pagination %}
+
+{% extends "base.html" %}
+
+{% block title %}
+  Members
+{% endblock %}
+
+{% block content %}
+<h1 class="my-3">Member List</h1>
+<div class="row">
+  <div class="col-3">
+    <form method="GET" action="">
+      <fieldset class="form-group">
+        {{ render_field(form, 'first_name') }}
+        {{ render_field(form, 'last_name') }}
+        {{ render_field(form, 'email') }}
+        {{ render_field(form, 'phone_number') }}
+      </fieldset>
+
+      <div class="form-group mt-3">
+        {{ form.submit(class="btn btn-outline-info") }}
+      </div>
+    </form>
+  </div>
+  <div class="col-9">
+    {% if users %}
+     <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">First Name</th>
+              <th scope="col">Last Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Phone Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr class="clickable-row" data-href="{{ user.details_url }}">
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.phone_number }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <h2 class="text-center">There are no members that meet the given criteria.</h2>
+    {% endif %}
+  </div>
+</div>
+
+
+{{ render_pagination(pagination, url_for('auth.member_list'), filters_query_string) }}
+
+{% endblock %}
+
+{% block js %}
+  document.addEventListener("DOMContentLoaded", function() {
+    const rows = document.querySelectorAll(".clickable-row");
+
+    rows.forEach(row => {
+      row.addEventListener("click", function() {
+        window.location.href = this.dataset.href;
+      });
+    });
+  });
+{% endblock %}
+```

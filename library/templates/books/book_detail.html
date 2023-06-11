@@ -31,13 +31,14 @@
       <h2>{{ book.title }}</h2>
       <p><strong>Authors:</strong> {{ book.authors|join(', ') }}</p>
       <p><strong>Topic:</strong> {{ book.topic }}</p>
-      <p><strong>Genre:</strong> {{ book.genre }}</p>
+      <p><strong>Genre:</strong> {{ book.genre.value }}</p>
       <p><strong>Publication date:</strong> {{ book.publication_date.strftime('%Y-%m-%d') }}</p>
       <p><strong>Description:</strong> {{ book.description }}</p>
       <p><strong>Publisher:</strong> {{ book.publisher }}</p>
       <p><strong>ISBN:</strong> {{ book.isbn }}</p>
       <p><strong>Pages:</strong> {{ book.pages }}</p>
       <p><strong>Stock:</strong> {{ book.stock }} (Initial stock: {{ book.initial_stock }})</p>
+
     </div>
   </div>
 </div>

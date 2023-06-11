@@ -1,3 +1,7 @@
+import math
+
+from bunnet import PydanticObjectId
+from flask import abort
 from flask import Blueprint
 from flask import flash
 from flask import redirect
@@ -5,14 +9,17 @@ from flask import render_template
 from flask import request
 from flask import url_for
 from flask_login import current_user
+from flask_login import login_required
 from flask_login import login_user
 from flask_login import logout_user
 
 from library import bcrypt
 from library.auth.forms import LoginForm
 from library.auth.forms import RegisterForm
+from library.auth.forms import SearchUserForm
 from library.auth.models import Address
 from library.auth.models import User
+from library.books.models import Rent
 
 auth = Blueprint("auth", __name__)
 
@@ -67,3 +74,63 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("auth/register.html", form=form)
+
+
+@auth.route("/members", methods=["GET"])
+@login_required
+def member_list():
+    page = request.args.get("page", 1, type=int)
+    page_size = request.args.get("page_size", 24, type=int)
+
+    filters = {
+        "first_name": request.args.get("first_name", None),
+        "last_name": request.args.get("last_name", None),
+        "email": request.args.get("email", None),
+        "phone_number": request.args.get("phone_number", None),
+    }
+
+    form = SearchUserForm(**filters)
+    filters_query_string = "&".join([f"{k}={v}" for k, v in filters.items() if v])
+
+    query = User.filter(**filters)
+    users = query.skip((page - 1) * page_size).limit(page_size).run()
+    total = query.count()
+
+    pagination = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": math.ceil(total / page_size),
+    }
+
+    return render_template(
+        "auth/member_list.html",
+        form=form,
+        users=users,
+        pagination=pagination,
+        filters_query_string=filters_query_string,
+    )
+
+
+@auth.route("/members/<user_id>", methods=["GET"])
+@login_required
+def user_details(user_id):
+    user = User.get(user_id).run()
+
+    if not user:
+        abort(404)
+
+    rents = (
+        Rent.find(Rent.user_id == PydanticObjectId(user_id), fetch_links=True)
+        .sort(-Rent.rent_date)
+        .run()
+    )
+    already_returned = [rent for rent in rents if rent.return_date]
+    not_returned = [rent for rent in rents if not rent.return_date]
+
+    return render_template(
+        "auth/user_details.html",
+        user=user,
+        already_returned=already_returned,
+        not_returned=not_returned,
+    )
