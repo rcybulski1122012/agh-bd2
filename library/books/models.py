@@ -4,6 +4,7 @@ from typing import Optional
 
 from bunnet import Document
 from bunnet import Indexed
+from bunnet import Link
 from bunnet import PydanticObjectId
 from bunnet.odm.operators.find.array import ElemMatch
 from bunnet.odm.operators.find.evaluation import RegEx
@@ -87,6 +88,16 @@ class Book(Document):
     def detail_url(self):
         return url_for("books.book_detail", book_id=self.id)
 
+    def rent_url(self, user_id: str):
+        return url_for("books.rent_book", book_id=self.id, user_id=user_id)
+
+    def return_url(self, user_id: str):
+        return url_for("books.return_book", book_id=self.id, user_id=user_id)
+
+    @property
+    def is_available(self):
+        return self.stock > 0
+
     @classmethod
     def filter(
         cls,
@@ -138,9 +149,14 @@ class Book(Document):
 class Rent(Document):
     book_id: Indexed(PydanticObjectId)
     user_id: Indexed(PydanticObjectId)
+    book: Link[Book]
     rent_date: datetime.date = Field(default_factory=datetime.date.today)
     due_date: datetime.date = Field(default_factory=next_month_factory)
     return_date: Optional[datetime.date] = None
 
     class Settings:
         bson_encoders = {**datetime_encoders}
+
+    @property
+    def is_overdue(self):
+        return not self.return_date and self.due_date < datetime.date.today()

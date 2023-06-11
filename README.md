@@ -9,6 +9,7 @@
 - MongoDB
 - Flask (Jinja)
 - Bunnet (ODM) & Pydantic
+- Bootstrap 5
 
 
 ## Uruchamianie
@@ -22,7 +23,7 @@
     ```bash 
     pip install -r requirements.txt
     ```
-- Ustaw zmienną środowiskową `MONGO_URI`  
+- Ustaw zmienną środowiskową `MONGO_URI` (serwer powinien zostać uruchomiony wraz z `Replica Set`)
 - Uruchom serwer aplikacji
     ```bash
     python -m app 

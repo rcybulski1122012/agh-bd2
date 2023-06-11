@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import EmailField
 from wtforms import PasswordField
+from wtforms import SearchField
 from wtforms import StringField
 from wtforms import SubmitField
 from wtforms.validators import DataRequired
@@ -62,3 +63,12 @@ class LoginForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired(), Email(message="Invalid email")])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Login")
+
+
+class SearchUserForm(FlaskForm):
+    first_name = SearchField("First name")
+    last_name = SearchField("Last name")
+    email = SearchField("Email")
+    phone_number = SearchField("Phone number")
+
+    submit = SubmitField("Search")

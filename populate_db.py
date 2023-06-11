@@ -65,8 +65,13 @@ def populate_db():
 
     rents = []
     for _ in range(500):
+        i = random.randint(0, len(books_ids) - 1)
+        book = books[i]
+        book_id = books_ids[i]
+        book.id = book_id
         rent = Rent(
-            book_id=random.choice(books_ids),
+            book_id=book_id,
+            book=book,
             user_id=random.choice(user_ids),
             rent_date=faker.date_between(start_date="-2y", end_date="today"),
             due_date=faker.date_between(start_date="+5d", end_date="+30d"),

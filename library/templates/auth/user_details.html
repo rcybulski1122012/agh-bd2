@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ user.full_name }}
+{% endblock %}
+
+{% block content %}
+  <h1>{{ user.full_name }}</h1>
+  <p><strong>Email:</strong> {{ user.email }}</p>
+  <p><strong>Phone Number:</strong> {{ user.phone_number }}</p>
+  <p><strong>Address:</strong> {{ user.address }}</p>
+
+ <h2 class="mb-3">User Rents</h2>
+  <h3>Not yet returned</h3>
+  <ul class="list-group mb-4">
+    {% for rent in not_returned %}
+     <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div>
+            <strong>{{ rent.book.title }}</strong> by {{ rent.book.authors|join(', ') }}<br>
+            Rent date: {{ rent.rent_date }}<br>
+            Due date: {{ rent.due_date }}<br>
+            {% if rent.is_overdue %}
+                <span class="badge bg-danger">Overdue</span>
+            {% endif %}
+        </div>
+       {% if current_user.is_admin %}
+        <a href="{{ rent.book.return_url(user.id) }}" class="btn btn-primary">Return</a>
+       {% endif %}
+    </li>
+    {% else %}
+      <p>You have returned all rented books!</p>
+    {% endfor %}
+  </ul>
+
+  <h3>Already returned</h3>
+  <ul class="list-group">
+    {% for rent in already_returned %}
+      <li class="list-group-item">
+        <strong>{{ rent.book.title }}</strong> by {{ rent.book.authors|join(', ') }}<br>
+        Rent date: {{ rent.rent_date }}<br>
+        Due date: {{ rent.due_date }}<br>
+        Return date: {{ rent.return_date }}
+      </li>
+    {% else %}
+      <p>You have not returned any books yet.</p>
+    {% endfor %}
+  </ul>
+{% endblock %}
