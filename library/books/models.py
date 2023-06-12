@@ -78,8 +78,8 @@ class Book(Document):
     stock: int
     initial_stock: int
     images_urls: list[str]
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     class Settings:
         bson_encoders = {**datetime_encoders}
