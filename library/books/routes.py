@@ -1,8 +1,10 @@
 import datetime
 import math
 import random
+import random
 
 from bunnet import PydanticObjectId
+from faker import Faker
 from faker import Faker
 from flask import abort
 from flask import Blueprint
@@ -16,6 +18,7 @@ from flask_login import login_required
 
 from library import mongo_client
 from library.auth.decorators import admin_role_required
+from library.auth.decorators import admin_role_required
 from library.auth.models import User
 from library.books.forms import AddBookForm
 from library.books.forms import FilterBooksForm
@@ -24,6 +27,8 @@ from library.books.models import Book
 from library.books.models import Rent
 
 books = Blueprint("books", __name__)
+
+faker = Faker()
 
 faker = Faker()
 
@@ -148,6 +153,50 @@ def return_book(book_id, user_id):
 
     flash("Book returned successfully", "success")
     return redirect(url_for("auth.user_details", user_id=user_id))
+
+
+@books.route("/books/remove/<book_id>", methods=["GET"])
+@login_required
+@admin_role_required
+def remove_book(book_id):
+    try:
+        result = Book.delete_one({"_id": PydanticObjectId(book_id)})
+        if result.deleted_count == 1:
+            flash("Book has been removed", "success")
+        else:
+            flash("Book not found", "error")
+    except Exception:
+        flash("Removing error", "error")
+
+    return redirect(url_for("books.list_books"))
+
+
+@books.route("/books/add_book", methods=["GET", "POST"])
+@login_required
+@admin_role_required
+def add_book():
+    form = AddBookForm()
+    if request.method == "POST" and form.validate_on_submit():
+        book = Book(
+            title=form.title.data,
+            authors=form.authors.data.split(","),
+            topic=form.topic.data,
+            genre=form.genre.data,
+            publication_date=form.publication_date.data,
+            publisher=form.publisher.data,
+            description=form.description.data,
+            isbn=form.isbn.data,
+            pages=form.pages.data,
+            stock=form.stock.data,
+            initial_stock=form.stock.data,
+            images_urls=[faker.image_url() for _ in range(random.randint(1, 3))],
+        )
+        book.authors = book.authors[0].split(",")
+        book.save()
+        flash("New book has been added", "success")
+        return redirect(url_for("books.list_books"))
+
+    return render_template("books/add_book.html", form=form)
 
 
 @books.route("/books/remove/<book_id>", methods=["GET"])
