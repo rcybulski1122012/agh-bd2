@@ -38,46 +38,6 @@ class RentBookForm(FlaskForm):
     email_or_phone_number = SearchField("Email or phone number", validators=[DataRequired()])
     submit = SubmitField("Rent")
 
-class AddBookForm(FlaskForm):
-    title = StringField(
-        "Title",
-        validators=[DataRequired(), Length(max=100, message="Title too long")],
-        default="Witcher"
-    )
-    authors = StringField(
-        "Authors", 
-        validators=[DataRequired(), Length(max=100, message="Authors too long")],
-        default="Steve Smith"
-    )
-    topic = StringField(
-        "Topic",
-        validators=[DataRequired(), Length(max=100, message="Topic too long")],
-        default="Fighting"
-    )
-    genre = SelectField("Genre", choices=GENRE_CHOICES, default="Fantasy")  # type: ignore
-
-    publication_date = DateField(
-        "Publication date (YYYY-MM-DD)", validators=[DataRequired()], default=datetime.now()
-    )
-    publisher = StringField(
-        "Publisher",
-        validators=[DataRequired(), Length(max=100, message="Publisher too long")],
-        default="Book publisher",
-    )
-    description = StringField(
-        "Description",
-        validators=[DataRequired(), Length(max=100, message="Description too long")],
-        default="Nice book",
-    )
-    isbn = StringField(
-        "ISBN",
-        validators=[DataRequired(), Length(max=100, message="ISBN not valid")],
-        default="1234567890",
-    )
-    pages = IntegerField("Pages", validators=[DataRequired()], default=345)
-    stock = IntegerField("Stock", validators=[DataRequired()], default=5)
-    submit = SubmitField("Add")
-
 
 class AddBookForm(FlaskForm):
     title = StringField(
