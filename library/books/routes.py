@@ -154,7 +154,7 @@ def return_book(book_id, user_id):
 @admin_role_required
 def remove_book(book_id):
     try:
-        result = Book.delete_one({'_id': book_id})
+        result = Book.delete_one({'_id': PydanticObjectId(book_id)})
         if result.deleted_count == 1:
             flash("Book has been removed", "success")
         else:
@@ -176,13 +176,13 @@ def add_book():
             authors=[form.authors.data],
             topic=form.topic.data,
             genre=form.genre.data,
-            publication_date=datetime.strptime(form.publication_date.data, "%Y-%m-%d"),
+            publication_date=form.publication_date.data,
             publisher=form.publisher.data,
             description=form.description.data,
-            isbn=f"{random.randint(1000000000, 9999999999)}",
-            pages=int(form.pages.data),
-            stock=int(form.stock.data),
-            initial_stock=int(form.stock.data) + 5,
+            isbn=form.isbn.data,
+            pages=form.pages.data,
+            stock=form.stock.data,
+            initial_stock=form.stock.data + 5,
             images_urls=[faker.image_url() for _ in range(random.randint(1, 3))],
             created_at=datetime.now(),
             updated_at=datetime.now(),

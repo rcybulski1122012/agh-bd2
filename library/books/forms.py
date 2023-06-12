@@ -4,9 +4,10 @@ from wtforms import SearchField
 from wtforms import SelectField
 from wtforms import SubmitField
 from wtforms import StringField
+from wtforms import IntegerField
+from wtforms import DateField
 from wtforms.validators import DataRequired
 from wtforms.validators import Length
-from wtforms.validators import ValidationError
 from datetime import datetime
 
 from library.books.models import BookGenre
@@ -47,9 +48,9 @@ class AddBookForm(FlaskForm):
     )
     genre = SelectField("Genre", choices=GENRE_CHOICES, default='Fantasy')  # type: ignore
 
-    publication_date = StringField(
-        "Publication date (YYYY-MM-DD)", validators=[DataRequired(), Length(max=100, message="Publication date too long")],
-        default='2010-12-13'
+    publication_date = DateField(
+        "Publication date (YYYY-MM-DD)", validators=[DataRequired(), Length(max=100, message="Publication date not valid")],
+        default=datetime.now()
     )
     publisher = StringField(
         "Publisher",
@@ -60,34 +61,16 @@ class AddBookForm(FlaskForm):
         "Description", validators=[DataRequired(), Length(max=100, message="Description too long")],
         default='Nice book'
     )
-    pages = StringField(
-        "Pages", validators=[DataRequired(), Length(max=100, message="Pages too long")],
-        default='345'
+    isbn = StringField(
+        "ISBN", validators=[DataRequired(), Length(max=100, message="ISBN not valid")],
+        default="1234567890"
     )
-    stock = StringField(
+    pages = IntegerField(
+        "Pages", validators=[DataRequired(), Length(max=100, message="Pages too long")],
+        default=345
+    )
+    stock = IntegerField(
         "Stock", validators=[DataRequired(), Length(max=100, message="Stock too long")],
-        default='5'
+        default=5
     )
     submit = SubmitField("Add")
-
-    def validate_pages(self, field):
-        try:
-            int(field.data)
-        except ValueError:
-            raise ValidationError("Pages must be a valid number.")
-        
-    def validate_stock(self, field):
-        try:
-            int(field.data)
-        except ValueError:
-            raise ValidationError("Stock must be a valid number.")
-        
-    def validate_publication_date(self, field):
-        try:
-            datetime.strptime(field.data, '%Y-%m-%d')
-        except ValueError:
-            raise ValidationError("Publication date must be in the format YYYY-MM-DD.")
-        
-    def validate_genre(self, field):
-        if not field.data:
-            raise ValidationError("Genre must not be empty.")

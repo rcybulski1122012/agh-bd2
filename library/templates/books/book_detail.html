@@ -40,6 +40,11 @@
       <p><strong>ISBN:</strong> {{ book.isbn }}</p>
       <p><strong>Pages:</strong> {{ book.pages }}</p>
       <p><strong>Stock:</strong> {{ book.stock }} (Initial stock: {{ book.initial_stock }})</p>
+      {% if current_user.is_admin %}
+        <a href="{{ url_for('books.remove_book', book_id=book.id) }}">
+            <button class="btn btn-primary btn-lg">Remove Book</button>
+        </a>
+      {% endif %}
     </div>
 
     {% if book.is_available and current_user.is_admin %}
