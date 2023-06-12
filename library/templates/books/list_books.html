@@ -6,6 +6,11 @@
 <h1 class="my-3">Book List</h1>
 <div class="row">
     <div class="col-3">
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('books.add_book') }}">
+            <button class="btn btn-primary btn-lg">Add Book</button>
+        </a>
+        {% endif %}
         <form method="GET" action="">
             <fieldset class="form-group">
               {{ render_field(form, 'title') }}
