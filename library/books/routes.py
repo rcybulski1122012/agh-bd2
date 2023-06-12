@@ -2,7 +2,6 @@ import datetime
 import math
 import random
 
-from auth.decorators import admin_role_required
 from bunnet import PydanticObjectId
 from faker import Faker
 from flask import abort
@@ -16,6 +15,7 @@ from flask_login import current_user
 from flask_login import login_required
 
 from library import mongo_client
+from library.auth.decorators import admin_role_required
 from library.auth.models import User
 from library.books.forms import AddBookForm
 from library.books.forms import FilterBooksForm
