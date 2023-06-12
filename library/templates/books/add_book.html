@@ -1,0 +1,30 @@
+{% from "_form_macros.html" import render_field %}
+
+{% extends "base.html" %}
+{% block title %}
+Add book
+{% endblock %}
+
+{% block content %}
+<h1>Add book</h1>
+
+<div class="content-section">
+  <form method="POST" action="">
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+     {{ render_field(form, 'title') }}
+     {{ render_field(form, 'authors') }}
+     {{ render_field(form, 'topic') }}
+     {{ render_field(form, 'genre') }}
+     {{ render_field(form, 'publication_date') }}
+     {{ render_field(form, 'publisher') }}
+     {{ render_field(form, 'description') }}
+     {{ render_field(form, 'pages') }}
+     {{ render_field(form, 'stock') }}
+    </fieldset>
+    <div class="form-group mt-3">
+      {{ form.submit(class="btn btn-outline-info") }}
+    </div>
+  </form>
+</div>
+{% endblock %}
