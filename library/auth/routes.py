@@ -1,6 +1,5 @@
 import math
 
-from auth.decorators import admin_role_required
 from bunnet import PydanticObjectId
 from flask import abort
 from flask import Blueprint
@@ -15,6 +14,7 @@ from flask_login import login_user
 from flask_login import logout_user
 
 from library import bcrypt
+from library.auth.decorators import admin_role_required
 from library.auth.forms import LoginForm
 from library.auth.forms import RegisterForm
 from library.auth.forms import SearchUserForm

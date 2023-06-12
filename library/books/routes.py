@@ -2,8 +2,8 @@ import datetime
 import math
 import random
 
-from auth.decorators import admin_role_required
 from bunnet import PydanticObjectId
+from faker import Faker
 from flask import abort
 from flask import Blueprint
 from flask import flash
@@ -13,13 +13,13 @@ from flask import request
 from flask import url_for
 from flask_login import current_user
 from flask_login import login_required
-from faker import Faker
 
 from library import mongo_client
+from library.auth.decorators import admin_role_required
 from library.auth.models import User
+from library.books.forms import AddBookForm
 from library.books.forms import FilterBooksForm
 from library.books.forms import RentBookForm
-from library.books.forms import AddBookForm
 from library.books.models import Book
 from library.books.models import Rent
 
@@ -149,12 +149,13 @@ def return_book(book_id, user_id):
     flash("Book returned successfully", "success")
     return redirect(url_for("auth.user_details", user_id=user_id))
 
-@books.route('/books/remove/<book_id>', methods=['GET'])
+
+@books.route("/books/remove/<book_id>", methods=["GET"])
 @login_required
 @admin_role_required
 def remove_book(book_id):
     try:
-        result = Book.delete_one({'_id': PydanticObjectId(book_id)})
+        result = Book.delete_one({"_id": PydanticObjectId(book_id)})
         if result.deleted_count == 1:
             flash("Book has been removed", "success")
         else:
@@ -173,7 +174,7 @@ def add_book():
     if request.method == "POST" and form.validate_on_submit():
         book = Book(
             title=form.title.data,
-            authors=[form.authors.data],
+            authors=form.authors.data.split(","),
             topic=form.topic.data,
             genre=form.genre.data,
             publication_date=form.publication_date.data,
@@ -182,10 +183,8 @@ def add_book():
             isbn=form.isbn.data,
             pages=form.pages.data,
             stock=form.stock.data,
-            initial_stock=form.stock.data + 5,
+            initial_stock=form.stock.data,
             images_urls=[faker.image_url() for _ in range(random.randint(1, 3))],
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
         )
         book.authors = book.authors[0].split(",")
         book.save()
