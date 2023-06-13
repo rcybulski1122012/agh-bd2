@@ -8,7 +8,7 @@
     <div class="col-3">
         {% if current_user.is_admin %}
         <a href="{{ url_for('books.add_book') }}">
-            <button class="btn btn-primary btn-lg">Add Book</button>
+            <button class="btn btn-primary">Add Book</button>
         </a>
         {% endif %}
         <form method="GET" action="">
@@ -16,6 +16,7 @@
               {{ render_field(form, 'title') }}
               {{ render_field(form, 'genre') }}
               {{ render_field(form, 'author') }}
+              {{ render_field(form, 'isbn') }}
               {{ render_field(form, 'order_by') }}
 
               <div class="form-check mt-2">

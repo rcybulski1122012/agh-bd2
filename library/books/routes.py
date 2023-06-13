@@ -39,6 +39,7 @@ def list_books():
         "genre": request.args.get("genre", None),
         "author": request.args.get("author", None),
         "available": request.args.get("available", None, type=bool),
+        "isbn": request.args.get("isbn", None),
         "order_by": request.args.get("order_by", None),
     }
     form = FilterBooksForm(**filters)
@@ -115,7 +116,6 @@ def rent_book(book_id, user_id):
         book.stock -= 1
         book.save(session=session)
         rent = Rent(
-            book_id=book.id,
             book=book,
             user_id=user_id,
         )

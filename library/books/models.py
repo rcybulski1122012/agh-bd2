@@ -5,12 +5,12 @@ from typing import Optional
 from bunnet import Document
 from bunnet import Indexed
 from bunnet import Link
-from bunnet import PydanticObjectId
 from bunnet.odm.operators.find.array import ElemMatch
 from bunnet.odm.operators.find.evaluation import RegEx
 from flask import url_for
 from pydantic import Field
 
+from library.auth.models import User
 from library.utils import datetime_encoders
 from library.utils import next_month_factory
 
@@ -105,6 +105,7 @@ class Book(Document):
         genre: BookGenre = None,
         author: str = None,
         available: bool = None,
+        isbn: str = None,
         order_by: str = None,
     ):
         query = cls.find()
@@ -129,6 +130,11 @@ class Book(Document):
                 cls.stock > 0,
             )
 
+        if isbn:
+            query.find(
+                RegEx(cls.title, f".*{title}.*", "i"),
+            )
+
         if order_by and order_by != BookOrders.NONE:
             if order_by == BookOrders.TITLE_ASC:
                 query = query.sort(cls.title)
@@ -147,9 +153,8 @@ class Book(Document):
 
 
 class Rent(Document):
-    book_id: Indexed(PydanticObjectId)
-    user_id: Indexed(PydanticObjectId)
     book: Link[Book]
+    user: Link[User]
     rent_date: datetime.date = Field(default_factory=datetime.date.today)
     due_date: datetime.date = Field(default_factory=next_month_factory)
     return_date: Optional[datetime.date] = None

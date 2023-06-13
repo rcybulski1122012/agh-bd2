@@ -22,6 +22,7 @@ class FilterBooksForm(FlaskForm):
     title = SearchField("Title")
     genre = SelectField("Genre", choices=GENRE_CHOICES, default="")  # type: ignore
     author = SearchField("Author")
+    isbn = SearchField("ISBN")
     available = BooleanField("Only available", default=False)
     order_by = SelectField("Order by", choices=ORDER_CHOICES, default="none")
 

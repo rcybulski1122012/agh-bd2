@@ -42,7 +42,7 @@
       <p><strong>Stock:</strong> {{ book.stock }} (Initial stock: {{ book.initial_stock }})</p>
       {% if current_user.is_admin %}
         <a href="{{ url_for('books.remove_book', book_id=book.id) }}">
-            <button class="btn btn-primary btn-lg">Remove Book</button>
+            <button class="btn btn-primary">Remove Book</button>
         </a>
       {% endif %}
     </div>

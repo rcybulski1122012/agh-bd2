@@ -69,13 +69,16 @@ def populate_db():
         book = books[i]
         book_id = books_ids[i]
         book.id = book_id
+        j = random.randint(0, len(user_ids) - 1)
+        user = users[j]
+        user_id = user_ids[j]
+        user.id = user_id
         rent = Rent(
-            book_id=book_id,
             book=book,
-            user_id=random.choice(user_ids),
-            rent_date=faker.date_between(start_date="-2y", end_date="today"),
-            due_date=faker.date_between(start_date="+5d", end_date="+30d"),
-            return_date=faker.date_between(start_date="today", end_date="+30d")
+            user=user,
+            rent_date=faker.date_between(start_date="-2m", end_date="today"),
+            due_date=faker.date_between(start_date="-5d", end_date="+15d"),
+            return_date=faker.date_between(start_date="-2d", end_date="+12d")
             if faker.boolean(70)
             else None,
         )
