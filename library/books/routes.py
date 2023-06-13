@@ -31,6 +31,17 @@ faker = Faker()
 @books.route("/books", methods=["GET"])
 @login_required
 def list_books():
+    bookid = "64887af634c32cbac776b584"
+    userid = "64887af534c32cbac776b37a"
+
+    print(
+        Rent.find_one(
+            Rent.book.id == bookid,
+            Rent.user.id == userid,
+            Rent.return_date == None,  # noqa
+        ).run()
+    )
+
     page = request.args.get("page", 1, type=int)
     page_size = request.args.get("page_size", 24, type=int)
 
@@ -95,11 +106,9 @@ def book_detail(book_id):
 def rent_book(book_id, user_id):
     book = Book.get(book_id).run()
     rent = Rent.find_one(
-        {
-            "book_id": PydanticObjectId(book_id),
-            "user_id": PydanticObjectId(user_id),
-            "return_date": None,
-        }
+        Rent.book.id == PydanticObjectId(book_id),
+        Rent.user.id == PydanticObjectId(user_id),
+        Rent.return_date == None,  # noqa
     ).run()
 
     if not book:
@@ -130,11 +139,9 @@ def rent_book(book_id, user_id):
 @admin_role_required
 def return_book(book_id, user_id):
     rent = Rent.find_one(
-        {
-            "book_id": PydanticObjectId(book_id),
-            "user_id": PydanticObjectId(user_id),
-            "return_date": None,
-        }
+        Rent.book.id == PydanticObjectId(book_id),
+        Rent.user.id == PydanticObjectId(user_id),
+        Rent.return_date == None,  # noqa
     ).run()
 
     if not rent:
@@ -193,3 +200,22 @@ def add_book():
         return redirect(url_for("books.list_books"))
 
     return render_template("books/add_book.html", form=form)
+
+
+@books.route("/returns/overdue", methods=["GET"])
+def overdue_returns():
+    page = request.args.get("page", 1, type=int)
+    page_size = request.args.get("page_size", 24, type=int)
+
+    query = Rent.get_overdue().find(fetch_links=True).sort(Rent.due_date)
+    rents = query.skip((page - 1) * page_size).limit(page_size).run()
+    total = query.count()
+
+    pagination = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": math.ceil(total / page_size),
+    }
+
+    return render_template("books/overdue_returns.html", rents=rents, pagination=pagination)

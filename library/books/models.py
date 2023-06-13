@@ -165,3 +165,10 @@ class Rent(Document):
     @property
     def is_overdue(self):
         return not self.return_date and self.due_date < datetime.date.today()
+
+    @classmethod
+    def get_overdue(cls):
+        return cls.find(
+            cls.return_date == None,  # noqa
+            cls.due_date < datetime.date.today(),
+        )
