@@ -8,7 +8,7 @@
     <div class="col-3">
         {% if current_user.is_admin %}
         <a href="{{ url_for('books.add_book') }}">
-            <button class="btn btn-primary btn-lg">Add Book</button>
+            <button class="btn btn-primary">Add Book</button>
         </a>
         {% endif %}
         <form method="GET" action="">
@@ -16,6 +16,7 @@
               {{ render_field(form, 'title') }}
               {{ render_field(form, 'genre') }}
               {{ render_field(form, 'author') }}
+              {{ render_field(form, 'isbn') }}
               {{ render_field(form, 'order_by') }}
 
               <div class="form-check mt-2">
@@ -45,7 +46,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ book.title }}</h5>
                     <p class="card-text">Authors: {{ ', '.join(book.authors) }}</p>
-                    <p class="card-text">Genre: {{ book.genre.value }}</p>
+                    <p class="card-text">Genre: {{ book.genre }}</p>
                     <p class="card-text">Publication Date: {{ book.publication_date.strftime('%Y-%m-%d')}}</p>
                     <p class="card-text">Pages: {{ book.pages }}</p>
                     <p class="card-text">Availability: {{ book.stock }}/{{ book.initial_stock }}</p>

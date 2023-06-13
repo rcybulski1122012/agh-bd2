@@ -29,6 +29,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.member_list') }}">Members</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('books.overdue_returns') }}">Overdue Returns</a>
+                    </li>
                     {% else %}
                     <li class=="nav-items">
                         <a class="nav-link" href="{{ current_user.details_url }}">Profile</a>

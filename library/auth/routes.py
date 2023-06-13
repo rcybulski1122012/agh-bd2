@@ -126,7 +126,7 @@ def user_details(user_id):
         abort(404)
 
     rents = (
-        Rent.find(Rent.user_id == PydanticObjectId(user_id), fetch_links=True)
+        Rent.find(Rent.user.id == PydanticObjectId(user_id), fetch_links=True)
         .sort(-Rent.rent_date)
         .run()
     )

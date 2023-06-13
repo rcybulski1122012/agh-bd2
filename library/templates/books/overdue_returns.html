@@ -1,0 +1,32 @@
+{% from "_pagination.html" import render_pagination %}
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mt-5 mb-3">Overdue Rents</h1>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Member Name</th>
+                <th scope="col">Book Title</th>
+                <th scope="col">Rent Due Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rent in rents %}
+                <tr>
+                    <td><a class="text-decoration-none text-reset" href="{{ rent.user.details_url }}">{{ rent.user.full_name }}</a></td>
+                    <td><a class="text-decoration-none text-reset" href="{{ rent.book.detail_url }}">{{ rent.book.title }}</a></td>
+                    <td>{{ rent.due_date.strftime('%Y-%m-%d') }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No overdue rents found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{{ render_pagination(pagination, url_for('books.overdue_returns'), '')}}
+{% endblock %}

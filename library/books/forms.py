@@ -28,6 +28,7 @@ class FilterBooksForm(FlaskForm):
     title = SearchField("Title")
     genre = SelectField("Genre", choices=GENRE_CHOICES, default="")  # type: ignore
     author = SearchField("Author")
+    isbn = SearchField("ISBN")
     available = BooleanField("Only available", default=False)
     order_by = SelectField("Order by", choices=ORDER_CHOICES, default="none")
 
@@ -77,4 +78,12 @@ class AddBookForm(FlaskForm):
     )
     pages = IntegerField("Pages", validators=[DataRequired()], default=345)
     stock = IntegerField("Stock", validators=[DataRequired()], default=5)
+    submit = SubmitField("Add")
+
+
+class AddReviewForm(FlaskForm):
+    rating = SelectField(
+        "Rating", validators=[DataRequired()], choices=[(x, x) for x in range(1, 6)]
+    )
+    comment = StringField("Comment", validators=[DataRequired()])
     submit = SubmitField("Add")

@@ -1,0 +1,21 @@
+{% from "_form_macros.html" import render_field %}
+{% extends "base.html" %}
+
+{% block title %}
+  Add review for {{ book.title }}
+{% endblock %}
+
+{% block content %}
+  <h2>Add a review for {{ book.title }}</h2>
+
+  <form method="POST" action="">
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+     {{ render_field(form, 'rating') }}
+     {{ render_field(form, 'comment') }}
+    </fieldset>
+    <div class="form-group mt-3">
+      {{ form.submit(class="btn btn-outline-info") }}
+    </div>
+  </form>
+{% endblock %}
