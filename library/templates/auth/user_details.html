@@ -16,7 +16,8 @@
     {% for rent in not_returned %}
      <li class="list-group-item d-flex justify-content-between align-items-start">
         <div>
-            <strong>{{ rent.book.title }}</strong> by {{ rent.book.authors|join(', ') }}<br>
+            <strong><a class="text-decoration-none text-reset" href="{{ rent.book.detail_url }}">
+            {{ rent.book.title }}</a></strong> by {{ rent.book.authors|join(', ') }}<br>
             Rent date: {{ rent.rent_date }}<br>
             Due date: {{ rent.due_date }}<br>
             {% if rent.is_overdue %}
@@ -36,7 +37,8 @@
   <ul class="list-group">
     {% for rent in already_returned %}
       <li class="list-group-item">
-        <strong>{{ rent.book.title }}</strong> by {{ rent.book.authors|join(', ') }}<br>
+        <strong><a class="text-decoration-none text-reset" href="{{ rent.book.detail_url }}">
+          {{ rent.book.title }}</a></strong> by {{ rent.book.authors|join(', ') }}<br>
         Rent date: {{ rent.rent_date }}<br>
         Due date: {{ rent.due_date }}<br>
         Return date: {{ rent.return_date }}

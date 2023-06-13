@@ -24,8 +24,9 @@ def create_app():
     from library.books.models import Book
     from library.auth.models import User
     from library.books.models import Rent
+    from library.books.models import Review
 
-    init_bunnet(database=mongo_client["library"], document_models=[Book, User, Rent])
+    init_bunnet(database=mongo_client["library"], document_models=[Book, User, Rent, Review])
 
     from library.books.routes import books
     from library.main.routes import main

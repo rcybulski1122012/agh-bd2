@@ -21,10 +21,12 @@ from library.auth.decorators import admin_role_required
 from library.auth.decorators import admin_role_required
 from library.auth.models import User
 from library.books.forms import AddBookForm
+from library.books.forms import AddReviewForm
 from library.books.forms import FilterBooksForm
 from library.books.forms import RentBookForm
 from library.books.models import Book
 from library.books.models import Rent
+from library.books.models import Review
 
 books = Blueprint("books", __name__)
 
@@ -43,6 +45,7 @@ def list_books():
         "genre": request.args.get("genre", None),
         "author": request.args.get("author", None),
         "available": request.args.get("available", None, type=bool),
+        "isbn": request.args.get("isbn", None),
         "order_by": request.args.get("order_by", None),
     }
     form = FilterBooksForm(**filters)
@@ -72,6 +75,21 @@ def list_books():
 @login_required
 def book_detail(book_id):
     book = Book.get(book_id).run()
+    reviews = Review.find(Review.book_id == PydanticObjectId(book_id), fetch_links=True).run()
+
+    already_rented = bool(
+        Rent.find_one(
+            Rent.book.id == PydanticObjectId(book_id),
+            Rent.user.id == PydanticObjectId(current_user.id),
+        ).run()
+    )
+
+    review_added = bool(
+        Review.find_one(
+            Review.book_id == PydanticObjectId(book_id),
+            Review.user.id == PydanticObjectId(current_user.id),
+        ).run()
+    )
 
     form = RentBookForm()
     if request.method == "POST":
@@ -89,23 +107,29 @@ def book_detail(book_id):
 
         return redirect(url_for("books.rent_book", book_id=book_id, user_id=str(user.id)))
 
-    return render_template("books/book_detail.html", book=book, form=form)
+    return render_template(
+        "books/book_detail.html",
+        book=book,
+        form=form,
+        reviews=reviews,
+        already_rented=already_rented,
+        review_added=review_added,
+    )
 
 
 @books.route("/books/<book_id>/rent/<user_id>", methods=["GET"])
 @login_required
 @admin_role_required
 def rent_book(book_id, user_id):
+    user = User.get(user_id).run()
     book = Book.get(book_id).run()
     rent = Rent.find_one(
-        {
-            "book_id": PydanticObjectId(book_id),
-            "user_id": PydanticObjectId(user_id),
-            "return_date": None,
-        }
+        Rent.book.id == PydanticObjectId(book_id),
+        Rent.user.id == PydanticObjectId(user_id),
+        Rent.return_date == None,  # noqa
     ).run()
 
-    if not book:
+    if not book or not user:
         raise abort(404)
 
     if rent:
@@ -118,11 +142,7 @@ def rent_book(book_id, user_id):
     with mongo_client.start_session() as session, session.start_transaction():
         book.stock -= 1
         book.save(session=session)
-        rent = Rent(
-            book_id=book.id,
-            book=book,
-            user_id=user_id,
-        )
+        rent = Rent(book=book, user=user)
         rent.save(session=session)
 
     flash("Book rented successfully", "success")
@@ -134,11 +154,9 @@ def rent_book(book_id, user_id):
 @admin_role_required
 def return_book(book_id, user_id):
     rent = Rent.find_one(
-        {
-            "book_id": PydanticObjectId(book_id),
-            "user_id": PydanticObjectId(user_id),
-            "return_date": None,
-        }
+        Rent.book.id == PydanticObjectId(book_id),
+        Rent.user.id == PydanticObjectId(user_id),
+        Rent.return_date == None,  # noqa
     ).run()
 
     if not rent:
@@ -198,3 +216,64 @@ def add_book():
 
     return render_template("books/add_book.html", form=form)
 
+
+@books.route("/returns/overdue", methods=["GET"])
+def overdue_returns():
+    page = request.args.get("page", 1, type=int)
+    page_size = request.args.get("page_size", 24, type=int)
+
+    query = Rent.get_overdue().find(fetch_links=True).sort(Rent.due_date)
+    rents = query.skip((page - 1) * page_size).limit(page_size).run()
+    total = query.count()
+
+    pagination = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": math.ceil(total / page_size),
+    }
+
+    return render_template("books/overdue_returns.html", rents=rents, pagination=pagination)
+
+
+@books.route("/books/<book_id>/add_review", methods=["GET", "POST"])
+def add_review(book_id):
+    book = Book.get(book_id).run()
+
+    review = Review.find_one(
+        Review.book_id == PydanticObjectId(book_id),
+        Review.user.id == PydanticObjectId(current_user.id),
+    ).run()
+
+    rent = Rent.find_one(
+        Review.book_id == PydanticObjectId(book_id),
+        Review.user.id == PydanticObjectId(current_user.id),
+    )
+
+    if not book:
+        abort(404)
+
+    if review:
+        abort(403)
+
+    if not rent:
+        abort(403)
+
+    form = AddReviewForm()
+    if request.method == "POST" and form.validate_on_submit():
+        rating = Decimal(form.rating.data)
+        with mongo_client.start_session() as session, session.start_transaction():
+            review = Review(
+                book_id=book_id,
+                user=current_user,
+                rating=rating,
+                comment=form.comment.data,
+            )
+            book.add_review(rating)
+            book.save(session=session)
+            review.save(session=session)
+
+        flash("New review has been added", "success")
+        return redirect(url_for("books.book_detail", book_id=book_id))
+
+    return render_template("books/add_review.html", form=form, book=book)
