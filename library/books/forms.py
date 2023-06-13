@@ -73,3 +73,11 @@ class AddBookForm(FlaskForm):
     pages = IntegerField("Pages", validators=[DataRequired()], default=345)
     stock = IntegerField("Stock", validators=[DataRequired()], default=5)
     submit = SubmitField("Add")
+
+
+class AddReviewForm(FlaskForm):
+    rating = SelectField(
+        "Rating", validators=[DataRequired()], choices=[(x, x) for x in range(1, 6)]
+    )
+    comment = StringField("Comment", validators=[DataRequired()])
+    submit = SubmitField("Add")

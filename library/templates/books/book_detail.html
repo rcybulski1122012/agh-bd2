@@ -39,6 +39,9 @@
       <p><strong>ISBN:</strong> {{ book.isbn }}</p>
       <p><strong>Pages:</strong> {{ book.pages }}</p>
       <p><strong>Stock:</strong> {{ book.stock }} (Initial stock: {{ book.initial_stock }})</p>
+      <p><strong>Average rating:</strong> {{ book.avg_rating }}</p>
+      <p><strong>Number of reviews:</strong> {{ book.review_count }}</p>
+
       {% if current_user.is_admin %}
         <a href="{{ url_for('books.remove_book', book_id=book.id) }}">
             <button class="btn btn-primary">Remove Book</button>
@@ -70,7 +73,7 @@
             <div class="card-body">
               <h5 class="card-title mt-1">{{ review.user.full_name }}</h5>
               <h6 class="card-subtitle mb-2 text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</h6>
-              <p class="card-text">{{ review.comment }}</p>
+              <p class="card-text">{{ review.rating }}/5 {{ review.comment }}</p>
             </div>
           </div>
         {% endfor %}
@@ -79,6 +82,10 @@
       <p>
         There are no reviews for this book yet.
       </p>
+    {% endif %}
+
+    {% if not current_user.is_admin and already_rented and not review_added %}
+      <a href="{{ book.add_review_url }}" class="btn btn-primary"> Add a review</a>
     {% endif %}
   </div>
 </div>

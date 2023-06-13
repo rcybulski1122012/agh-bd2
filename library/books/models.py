@@ -79,6 +79,8 @@ class Book(Document):
     pages: int
     stock: int
     initial_stock: int
+    review_count: int = 0
+    avg_rating: Decimal = Decimal(0)
     images_urls: list[str]
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
     updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
@@ -95,6 +97,10 @@ class Book(Document):
 
     def return_url(self, user_id: str):
         return url_for("books.return_book", book_id=self.id, user_id=user_id)
+
+    @property
+    def add_review_url(self):
+        return url_for("books.add_review", book_id=self.id)
 
     @property
     def is_available(self):
@@ -153,6 +159,12 @@ class Book(Document):
 
         return query
 
+    def add_review(self, rating: int):
+        self.avg_rating = (self.avg_rating * self.review_count + rating) / (
+            self.review_count + 1
+        )
+        self.review_count += 1
+
 
 class Rent(Document):
     book: Link[Book]
@@ -160,8 +172,6 @@ class Rent(Document):
     rent_date: datetime.date = Field(default_factory=datetime.date.today)
     due_date: datetime.date = Field(default_factory=next_month_factory)
     return_date: Optional[datetime.date] = None
-    review_count: int = 0
-    avg_rating: Decimal = Decimal(0)
 
     class Settings:
         bson_encoders = {**datetime_encoders}
