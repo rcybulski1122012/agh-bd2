@@ -87,7 +87,7 @@ def populate_db():
         )
         rents.append(rent)
 
-        if rent.return_date and random.choice([True, False]):
+        if rent.return_date:
             review = Review(
                 book_id=PydanticObjectId(book_id),
                 user=user,

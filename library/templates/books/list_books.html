@@ -46,7 +46,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ book.title }}</h5>
                     <p class="card-text">Authors: {{ ', '.join(book.authors) }}</p>
-                    <p class="card-text">Genre: {{ book.genre.value }}</p>
+                    <p class="card-text">Genre: {{ book.genre }}</p>
                     <p class="card-text">Publication Date: {{ book.publication_date.strftime('%Y-%m-%d')}}</p>
                     <p class="card-text">Pages: {{ book.pages }}</p>
                     <p class="card-text">Availability: {{ book.stock }}/{{ book.initial_stock }}</p>

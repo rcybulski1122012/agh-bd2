@@ -71,12 +71,12 @@ class Book(Document):
     title: Indexed(str)
     authors: list[str]
     topic: str
-    genre: BookGenre
-    publication_date: datetime.date
+    genre: Indexed(str)  # BookGenre
+    publication_date: Indexed(datetime.date)
     description: str
-    publisher: Indexed(str)
+    publisher: str
     isbn: Indexed(str)
-    pages: int
+    pages: Indexed(int)
     stock: int
     initial_stock: int
     review_count: int = 0
@@ -194,3 +194,6 @@ class Review(Document):
     rating: int
     comment: str
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+
+    class Settings:
+        bson_encoders = {**datetime_encoders}

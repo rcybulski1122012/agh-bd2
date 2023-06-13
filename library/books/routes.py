@@ -34,17 +34,6 @@ faker = Faker()
 @books.route("/books", methods=["GET"])
 @login_required
 def list_books():
-    bookid = "64887af634c32cbac776b584"
-    userid = "64887af534c32cbac776b37a"
-
-    print(
-        Rent.find_one(
-            Rent.book.id == bookid,
-            Rent.user.id == userid,
-            Rent.return_date == None,  # noqa
-        ).run()
-    )
-
     page = request.args.get("page", 1, type=int)
     page_size = request.args.get("page_size", 24, type=int)
 
