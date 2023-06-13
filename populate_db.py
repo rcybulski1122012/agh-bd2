@@ -1,5 +1,6 @@
 import random
 
+from bunnet import PydanticObjectId
 from faker import Faker
 
 from library import create_app
@@ -7,6 +8,7 @@ from library.auth.models import User
 from library.books.models import Book
 from library.books.models import BookGenre
 from library.books.models import Rent
+from library.books.models import Review
 
 faker = Faker()
 
@@ -64,6 +66,7 @@ def populate_db():
     books_ids = Book.insert_many(books).inserted_ids  # type: ignore
 
     rents = []
+    reviews = []
     for _ in range(500):
         i = random.randint(0, len(books_ids) - 1)
         book = books[i]
@@ -84,7 +87,18 @@ def populate_db():
         )
         rents.append(rent)
 
+        if rent.return_date and random.choice([True, False]):
+            review = Review(
+                book_id=PydanticObjectId(book_id),
+                user=user,
+                rating=random.randint(1, 5),
+                comment=faker.text(),
+            )
+
+            reviews.append(review)
+
     Rent.insert_many(rents)  # type: ignore
+    Review.insert_many(reviews)  # type: ignore
 
 
 if __name__ == "__main__":

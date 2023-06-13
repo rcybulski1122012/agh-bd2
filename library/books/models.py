@@ -1,10 +1,12 @@
 import datetime
+from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
 from bunnet import Document
 from bunnet import Indexed
 from bunnet import Link
+from bunnet import PydanticObjectId
 from bunnet.odm.operators.find.array import ElemMatch
 from bunnet.odm.operators.find.evaluation import RegEx
 from flask import url_for
@@ -158,6 +160,8 @@ class Rent(Document):
     rent_date: datetime.date = Field(default_factory=datetime.date.today)
     due_date: datetime.date = Field(default_factory=next_month_factory)
     return_date: Optional[datetime.date] = None
+    review_count: int = 0
+    avg_rating: Decimal = Decimal(0)
 
     class Settings:
         bson_encoders = {**datetime_encoders}
@@ -172,3 +176,11 @@ class Rent(Document):
             cls.return_date == None,  # noqa
             cls.due_date < datetime.date.today(),
         )
+
+
+class Review(Document):
+    book_id: Indexed(PydanticObjectId)
+    user: Link[User]
+    rating: int
+    comment: str
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)

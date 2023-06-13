@@ -22,6 +22,7 @@ from library.books.forms import FilterBooksForm
 from library.books.forms import RentBookForm
 from library.books.models import Book
 from library.books.models import Rent
+from library.books.models import Review
 
 books = Blueprint("books", __name__)
 
@@ -80,6 +81,7 @@ def list_books():
 @login_required
 def book_detail(book_id):
     book = Book.get(book_id).run()
+    reviews = Review.find(Review.book_id == PydanticObjectId(book_id), fetch_links=True).run()
 
     form = RentBookForm()
     if request.method == "POST":
@@ -97,7 +99,7 @@ def book_detail(book_id):
 
         return redirect(url_for("books.rent_book", book_id=book_id, user_id=str(user.id)))
 
-    return render_template("books/book_detail.html", book=book, form=form)
+    return render_template("books/book_detail.html", book=book, form=form, reviews=reviews)
 
 
 @books.route("/books/<book_id>/rent/<user_id>", methods=["GET"])

@@ -28,7 +28,6 @@
       </button>
     </div>
 
-    <!-- Book Details -->
     <div class="mt-4">
       <h2>{{ book.title }}</h2>
       <p><strong>Authors:</strong> {{ book.authors|join(', ') }}</p>
@@ -60,6 +59,26 @@
          </fieldset>
       </form>
     </div>
+    {% endif %}
+
+    <hr>
+    {% if reviews %}
+      <div>
+        <h3>Reviews</h3>
+        {% for review in reviews %}
+          <div class="card mt-3">
+            <div class="card-body">
+              <h5 class="card-title mt-1">{{ review.user.full_name }}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</h6>
+              <p class="card-text">{{ review.comment }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>
+        There are no reviews for this book yet.
+      </p>
     {% endif %}
   </div>
 </div>
