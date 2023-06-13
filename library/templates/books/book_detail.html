@@ -43,6 +43,12 @@
       <p><strong>Number of reviews:</strong> {{ book.review_count }}</p>
 
       {% if current_user.is_admin %}
+        <a href="{{ url_for('books.modify_book', book_id=book.id) }}">
+            <button class="btn btn-primary">Make Changes</button>
+        </a>
+      {% endif %}
+
+      {% if current_user.is_admin %}
         <a href="{{ url_for('books.remove_book', book_id=book.id) }}">
             <button class="btn btn-primary">Remove Book</button>
         </a>
