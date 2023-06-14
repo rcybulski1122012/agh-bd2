@@ -1,18 +1,25 @@
 from datetime import datetime
 
+from datetime import datetime
+
 from flask_wtf import FlaskForm
 from wtforms import BooleanField
+from wtforms import DateField
+from wtforms import IntegerField
 from wtforms import DateField
 from wtforms import IntegerField
 from wtforms import SearchField
 from wtforms import SelectField
 from wtforms import StringField
 from wtforms import SubmitField
+from wtforms import StringField
 from wtforms.validators import DataRequired
+from wtforms.validators import Length
 from wtforms.validators import Length
 
 from library.books.models import BookGenre
 from library.books.models import BookOrders
+from library.books.models import Book
 
 ORDER_CHOICES = [(x.value, x.value) for x in BookOrders]  # type: ignore
 GENRE_CHOICES = [("", "Select a genre")] + [(x.value, x.value) for x in BookGenre]  # type: ignore
@@ -81,3 +88,55 @@ class AddReviewForm(FlaskForm):
     )
     comment = StringField("Comment", validators=[DataRequired()])
     submit = SubmitField("Add")
+
+class ModifyBookForm(FlaskForm):
+    def __init__(self, book_id, *args, **kwargs):
+        super(ModifyBookForm, self).__init__(*args, **kwargs)
+        self.book_id = book_id
+        self.fetch_book_data()
+
+    def fetch_book_data(self):
+        book = Book.get(self.book_id).run()
+        self.title.default = book.title
+        self.authors.default = book.authors
+        self.topic.default = book.topic
+        self.genre.default = book.genre
+        self.publication_date.default = book.publication_date
+        self.publisher.default = book.publisher
+        self.description.default = book.description
+        self.isbn.default = book.isbn
+        self.pages.default = book.pages
+        self.stock.default = book.stock
+
+    title = StringField(
+        "Title",
+        validators=[DataRequired(), Length(max=100, message="Title too long")],
+    )
+    authors = StringField(
+        "Authors",
+        validators=[DataRequired(), Length(max=100, message="Authors too long")],
+    )
+    topic = StringField(
+        "Topic",
+        validators=[DataRequired(), Length(max=100, message="Topic too long")],
+    )
+    genre = SelectField("Genre", choices=GENRE_CHOICES)  # type: ignore
+
+    publication_date = DateField(
+        "Publication date (YYYY-MM-DD)", validators=[DataRequired()],
+    )
+    publisher = StringField(
+        "Publisher",
+        validators=[DataRequired(), Length(max=100, message="Publisher too long")],
+    )
+    description = StringField(
+        "Description",
+        validators=[DataRequired(), Length(max=1000, message="Description too long")],
+    )
+    isbn = StringField(
+        "ISBN",
+        validators=[DataRequired(), Length(max=100, message="ISBN not valid")],
+    )
+    pages = IntegerField("Pages", validators=[DataRequired()])
+    stock = IntegerField("Stock", validators=[DataRequired()])
+    submit = SubmitField("Save")
