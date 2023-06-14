@@ -283,7 +283,7 @@ def admin_role_required(func):
 ```
 
 
-## Głowne funkcjonalności
+## Główne funkcjonalności
 
 ### Lista książek
 
@@ -430,4 +430,407 @@ Do wyświetlania paginacji zastosowano makro `render_pagination`. Podobne podej�
 </nav>
 {% endif %}
 {% endmacro %}
+```
+
+
+### Detale książek
+
+Widok `book_detail` wyświetla szczegóły książki, jej recenzje oraz formularz do wypożyczenia książki.
+
+```python
+@books.route("/books/<book_id>", methods=["GET", "POST"])
+@login_required
+def book_detail(book_id):
+    book = Book.get(book_id).run()
+    reviews = Review.find(Review.book_id == PydanticObjectId(book_id), fetch_links=True).run()
+
+    already_rented = bool(
+        Rent.find_one(
+            Rent.book.id == PydanticObjectId(book_id),
+            Rent.user.id == PydanticObjectId(current_user.id),
+        ).run()
+    )
+
+    review_added = bool(
+        Review.find_one(
+            Review.book_id == PydanticObjectId(book_id),
+            Review.user.id == PydanticObjectId(current_user.id),
+        ).run()
+    )
+
+    form = RentBookForm()
+    if request.method == "POST":
+        if not current_user.is_admin:
+            abort(403)
+
+        user = (
+            User.find_one({"email": form.email_or_phone_number.data}).run()
+            or User.find_one({"email": form.email_or_phone_number.data}).run()
+        )
+
+        if not user:
+            flash("User not found", "danger")
+            return redirect(url_for("books.book_detail", book_id=book_id))
+
+        return redirect(url_for("books.rent_book", book_id=book_id, user_id=str(user.id)))
+
+    return render_template(
+        "books/book_detail.html",
+        book=book,
+        form=form,
+        reviews=reviews,
+        already_rented=already_rented,
+        review_added=review_added,
+    )
+```
+
+### Wypożyczanie książek
+
+Widok `rent_book` jest dostępny tylko dla administratorów. Pozwala on na
+wypożyczenie książki użytkownikowi o podanym adresie email lub numerze telefonu.
+Operacje w tym przypadku są wykowonywane transakcyjnie. Bibliotego `Bunnet` póki co
+nie wspera transakcji, dlatego wykorzystano bezpośrednio bibliotekę `pymongo`.
+
+```python
+
+```python
+@books.route("/books/<book_id>/rent/<user_id>", methods=["GET"])
+@login_required
+@admin_role_required
+def rent_book(book_id, user_id):
+    user = User.get(user_id).run()
+    book = Book.get(book_id).run()
+    rent = Rent.find_one(
+        Rent.book.id == PydanticObjectId(book_id),
+        Rent.user.id == PydanticObjectId(user_id),
+        Rent.return_date == None,  # noqa
+    ).run()
+
+    if not book or not user:
+        raise abort(404)
+
+    if rent:
+        flash("Book already rented", "danger")
+        return redirect(book.detail_url)
+
+    if not book.is_available:
+        raise abort(403)
+
+    with mongo_client.start_session() as session, session.start_transaction():
+        book.stock -= 1
+        book.save(session=session)
+        rent = Rent(book=book, user=user)
+        rent.save(session=session)
+
+    flash("Book rented successfully", "success")
+    return redirect(url_for("auth.user_details", user_id=user_id))
+```
+
+### Zwracanie książek
+
+Widok `return_book` pozwala na zwracanie książek i jest dostępny tylko dla
+administratora. Podobnie jak w `rent_book` wykożystaliśmy mechanizm transakcji.
+
+```python
+@books.route("/books/<book_id>/return/<user_id>", methods=["GET"])
+@login_required
+@admin_role_required
+def return_book(book_id, user_id):
+    rent = Rent.find_one(
+        Rent.book.id == PydanticObjectId(book_id),
+        Rent.user.id == PydanticObjectId(user_id),
+        Rent.return_date == None,  # noqa
+    ).run()
+
+    if not rent:
+        raise abort(404)
+
+    with mongo_client.start_session() as session, session.start_transaction():
+        book = Book.get(book_id).run()
+        book.stock += 1
+        book.save(session=session)
+        rent.return_date = datetime.date.today().isoformat()
+        rent.save(session=session)
+
+    flash("Book returned successfully", "success")
+    return redirect(url_for("auth.user_details", user_id=user_id))
+```
+
+
+### Usuwanie ksiązek
+
+```python
+@books.route("/books/remove/<book_id>", methods=["GET"])
+@login_required
+@admin_role_required
+def remove_book(book_id):
+    try:
+        result = Book.delete_one({"_id": PydanticObjectId(book_id)})
+        if result.deleted_count == 1:
+            flash("Book has been removed", "success")
+        else:
+            flash("Book not found", "error")
+    except Exception:
+        flash("Removing error", "error")
+
+    return redirect(url_for("books.list_books"))
+```
+
+
+### Dodawanie książek
+
+```python
+@books.route("/books/add_book", methods=["GET", "POST"])
+@login_required
+@admin_role_required
+def add_book():
+    form = AddBookForm()
+    if request.method == "POST" and form.validate_on_submit():
+        book = Book(
+            title=form.title.data,
+            authors=form.authors.data.split(","),
+            topic=form.topic.data,
+            genre=form.genre.data,
+            publication_date=form.publication_date.data,
+            publisher=form.publisher.data,
+            description=form.description.data,
+            isbn=form.isbn.data,
+            pages=form.pages.data,
+            stock=form.stock.data,
+            initial_stock=form.stock.data,
+            images_urls=[faker.image_url() for _ in range(random.randint(1, 3))],
+        )
+        book.authors = book.authors[0].split(",")
+        book.save()
+        flash("New book has been added", "success")
+        return redirect(url_for("books.list_books"))
+
+    return render_template("books/add_book.html", form=form)
+```
+
+
+### Zaległe zwroty
+
+Widok `overdue_returns` zwraca paginowaną listę zaległych zwrotów posortowaną po terminie zwrotu.
+Dostępny jest tylko dla administratora.
+
+```python
+@books.route("/returns/overdue", methods=["GET"])
+@login_required
+@admin_role_required
+def overdue_returns():
+    page = request.args.get("page", 1, type=int)
+    page_size = request.args.get("page_size", 24, type=int)
+
+    query = Rent.get_overdue().find(fetch_links=True).sort(Rent.due_date)
+    rents = query.skip((page - 1) * page_size).limit(page_size).run()
+    total = query.count()
+
+    pagination = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": math.ceil(total / page_size),
+    }
+
+    return render_template("books/overdue_returns.html", rents=rents, pagination=pagination)
+```
+
+
+### Dodawanie recenzji
+
+Widok `add_review` pozwala na dodawanie recenzji do książek.
+Dostępny jest tylko dla użytkowników, któży wypożyczyli daną książkę.
+Podobnie jak w powyżych widokach zastosowano mechanizm transakcji
+
+```python
+@books.route("/books/<book_id>/add_review", methods=["GET", "POST"])
+def add_review(book_id):
+    book = Book.get(book_id).run()
+
+    review = Review.find_one(
+        Review.book_id == PydanticObjectId(book_id),
+        Review.user.id == PydanticObjectId(current_user.id),
+    ).run()
+
+    rent = Rent.find_one(
+        Review.book_id == PydanticObjectId(book_id),
+        Review.user.id == PydanticObjectId(current_user.id),
+    )
+
+    if not book:
+        abort(404)
+
+    if review:
+        abort(403)
+
+    if not rent:
+        abort(403)
+
+    form = AddReviewForm()
+    if request.method == "POST" and form.validate_on_submit():
+        rating = Decimal(form.rating.data)
+        with mongo_client.start_session() as session, session.start_transaction():
+            review = Review(
+                book_id=book_id,
+                user=current_user,
+                rating=rating,
+                comment=form.comment.data,
+            )
+            book.add_review(rating)
+            book.save(session=session)
+            review.save(session=session)
+
+        flash("New review has been added", "success")
+        return redirect(url_for("books.book_detail", book_id=book_id))
+
+    return render_template("books/add_review.html", form=form, book=book)
+```
+
+Nowe wartości dla `avg_rating` są obliczane w metodize pomocnicznej:
+
+```python
+def add_review(self, rating: int):
+    self.avg_rating = (self.avg_rating * self.review_count + rating) / (
+        self.review_count + 1
+    )
+    self.review_count += 1
+```
+
+### Lista członków
+
+Widok `member_list` zwraca paginowaną paginowaną listę użytkowników.
+Sortowanie, filtrowanie i paginacja zostały zaimplementowane analogicznie
+do widoku `book_list`.
+
+```python
+@auth.route("/members", methods=["GET"])
+@login_required
+@admin_role_required
+def member_list():
+    page = request.args.get("page", 1, type=int)
+    page_size = request.args.get("page_size", 24, type=int)
+
+    filters = {
+        "first_name": request.args.get("first_name", None),
+        "last_name": request.args.get("last_name", None),
+        "email": request.args.get("email", None),
+        "phone_number": request.args.get("phone_number", None),
+    }
+
+    form = SearchUserForm(**filters)
+    filters_query_string = "&".join([f"{k}={v}" for k, v in filters.items() if v])
+
+    query = User.filter(**filters)
+    users = query.skip((page - 1) * page_size).limit(page_size).run()
+    total = query.count()
+
+    pagination = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": math.ceil(total / page_size),
+    }
+
+    return render_template(
+        "auth/member_list.html",
+        form=form,
+        users=users,
+        pagination=pagination,
+        filters_query_string=filters_query_string,
+    )
+```
+
+### Delate użytkownika
+
+```python
+@auth.route("/members/<user_id>", methods=["GET"])
+@login_required
+def user_details(user_id):
+    user = User.get(user_id).run()
+
+    if not current_user.is_admin and current_user.id != user.id:
+        abort(403)
+
+    if not user:
+        abort(404)
+
+    rents = (
+        Rent.find(Rent.user.id == PydanticObjectId(user_id), fetch_links=True)
+        .sort(-Rent.rent_date)
+        .run()
+    )
+    already_returned = [rent for rent in rents if rent.return_date]
+    not_returned = [rent for rent in rents if not rent.return_date]
+
+    return render_template(
+        "auth/user_details.html",
+        user=user,
+        already_returned=already_returned,
+        not_returned=not_returned,
+    )
+```
+
+### Rejestracja użytkownika
+
+Widok `register` pozwala na rejestrację nowego użytkownika.
+Skorzystano z biblotegi `bcrypt` do hashowania hasła.
+Domyślnie każdy użyktownik ma flagę `is_admin` ustawioną na `False`.
+Jedynym sposobem na zmianę roli jest zrobienie tego ręcznie w bazie danych.
+
+```python
+@auth.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+
+    form = RegisterForm()
+    if request.method == "POST" and form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
+        user = User(
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            email=form.email.data,
+            phone_number=form.phone_number.data,
+            password=hashed_password,
+            address=Address(
+                street=form.street.data,
+                city=form.city.data,
+                postal_code=form.postal_code.data,
+                country=form.country.data,
+            ),
+        )
+        user.insert()
+        flash("Your account has been created! You are now able to log in", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/register.html", form=form)
+```
+
+### Logowanie i wylogowywanie użytkownika
+
+```python
+@auth.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.home"))
+
+    form = LoginForm()
+    if request.method == "POST" and form.validate_on_submit():
+        user = User.find_one(User.email == form.email.data).run()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user)
+            next_page = request.args.get("next")
+            flash("You have been logged in!", "success")
+            return redirect(next_page) if next_page else redirect(url_for("main.home"))
+        else:
+            flash("Login Unsuccessful. Please check email and password", "danger")
+    return render_template("auth/login.html", form=form)
+```
+
+```python
+@auth.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("main.home"))
 ```
