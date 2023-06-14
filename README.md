@@ -840,7 +840,7 @@ def logout():
 @login_required
 @admin_role_required
 def modify_book(book_id):
-    form = ModifyBookForm(book_id)
+    form = ModifyBookForm(book_id, override=request.method == "GET")
     if request.method == "POST" and form.validate_on_submit():
         book = Book.get(book_id).run()
         book.title = form.title.data
@@ -855,11 +855,12 @@ def modify_book(book_id):
         book.stock=form.stock.data
         book.initial_stock=form.stock.data
         book.images_urls=[faker.image_url() for _ in range(random.randint(1, 3))]
+        book.initial_stock = form.initial_stock.data
 
-        book.authors = book.authors[0].split(",")
         book.save()
         flash("Book has been modified", "success")
         return redirect(url_for("books.list_books"))
     
     return render_template("books/add_book.html", form=form)
+
 ```

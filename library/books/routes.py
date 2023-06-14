@@ -5,7 +5,6 @@ from decimal import Decimal
 
 from bunnet import PydanticObjectId
 from faker import Faker
-from faker import Faker
 from flask import abort
 from flask import Blueprint
 from flask import flash
@@ -18,12 +17,11 @@ from flask_login import login_required
 
 from library import mongo_client
 from library.auth.decorators import admin_role_required
-from library.auth.decorators import admin_role_required
 from library.auth.models import User
 from library.books.forms import AddBookForm
-from library.books.forms import ModifyBookForm
 from library.books.forms import AddReviewForm
 from library.books.forms import FilterBooksForm
+from library.books.forms import ModifyBookForm
 from library.books.forms import RentBookForm
 from library.books.models import Book
 from library.books.models import Rent
@@ -34,6 +32,7 @@ books = Blueprint("books", __name__)
 faker = Faker()
 
 faker = Faker()
+
 
 @books.route("/books", methods=["GET"])
 @login_required
@@ -280,31 +279,30 @@ def add_review(book_id):
 
     return render_template("books/add_review.html", form=form, book=book)
 
+
 @books.route("/books/modify/<book_id>", methods=["GET", "POST"])
 @login_required
 @admin_role_required
 def modify_book(book_id):
-    form = ModifyBookForm(book_id)
+    form = ModifyBookForm(book_id, override=request.method == "GET")
     if request.method == "POST" and form.validate_on_submit():
         book = Book.get(book_id).run()
         book.title = form.title.data
-        book.authors=form.authors.data.split(",")
-        book.topic=form.topic.data
-        book.genre=form.genre.data
-        book.publication_date=form.publication_date.data
-        book.publisher=form.publisher.data
-        book.description=form.description.data
-        book.isbn=form.isbn.data
-        book.pages=form.pages.data
-        book.stock=form.stock.data
-        book.initial_stock=form.stock.data
-        book.images_urls=[faker.image_url() for _ in range(random.randint(1, 3))]
+        book.authors = form.authors.data.split(",")
+        book.topic = form.topic.data
+        book.genre = form.genre.data
+        book.publication_date = form.publication_date.data
+        book.publisher = form.publisher.data
+        book.description = form.description.data
+        book.isbn = form.isbn.data
+        book.pages = form.pages.data
+        book.stock = form.stock.data
+        book.initial_stock = form.stock.data
+        book.images_urls = [faker.image_url() for _ in range(random.randint(1, 3))]
+        book.initial_stock = form.initial_stock.data
 
-        book.authors = book.authors[0].split(",")
         book.save()
         flash("Book has been modified", "success")
         return redirect(url_for("books.list_books"))
-    
-    return render_template("books/add_book.html", form=form)
 
-    
+    return render_template("books/add_book.html", form=form)
