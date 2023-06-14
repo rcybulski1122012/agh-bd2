@@ -215,6 +215,8 @@ def add_book():
 
 
 @books.route("/returns/overdue", methods=["GET"])
+@login_required
+@admin_role_required
 def overdue_returns():
     page = request.args.get("page", 1, type=int)
     page_size = request.args.get("page_size", 24, type=int)
@@ -234,6 +236,7 @@ def overdue_returns():
 
 
 @books.route("/books/<book_id>/add_review", methods=["GET", "POST"])
+@login_required
 def add_review(book_id):
     book = Book.get(book_id).run()
 
