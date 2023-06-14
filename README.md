@@ -565,11 +565,9 @@ def return_book(book_id, user_id):
 @admin_role_required
 def remove_book(book_id):
     try:
-        result = Book.delete_one({"_id": PydanticObjectId(book_id)})
-        if result.deleted_count == 1:
-            flash("Book has been removed", "success")
-        else:
-            flash("Book not found", "error")
+        book = Book.get(book_id).run()
+        book.delete()
+        flash("Book has been removed", "success")
     except Exception:
         flash("Removing error", "error")
 
@@ -833,4 +831,35 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("main.home"))
+```
+
+### Modyfikacja książek
+
+```python
+@books.route("/books/modify/<book_id>", methods=["GET", "POST"])
+@login_required
+@admin_role_required
+def modify_book(book_id):
+    form = ModifyBookForm(book_id)
+    if request.method == "POST" and form.validate_on_submit():
+        book = Book.get(book_id).run()
+        book.title = form.title.data
+        book.authors=form.authors.data.split(",")
+        book.topic=form.topic.data
+        book.genre=form.genre.data
+        book.publication_date=form.publication_date.data
+        book.publisher=form.publisher.data
+        book.description=form.description.data
+        book.isbn=form.isbn.data
+        book.pages=form.pages.data
+        book.stock=form.stock.data
+        book.initial_stock=form.stock.data
+        book.images_urls=[faker.image_url() for _ in range(random.randint(1, 3))]
+
+        book.authors = book.authors[0].split(",")
+        book.save()
+        flash("Book has been modified", "success")
+        return redirect(url_for("books.list_books"))
+    
+    return render_template("books/add_book.html", form=form)
 ```
